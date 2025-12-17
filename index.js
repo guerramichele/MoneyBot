@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -15,30 +14,25 @@ const openai = new OpenAIApi(new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 }));
 
-// Memoria delle conversazioni (semplice esempio in memoria volatile)
+// Memoria delle conversazioni
 const conversationMemory = {};
 
 // Route principale
 app.get('/', (req, res) => {
-  res.send('AI Stock Bot è attivo e funzionante!');
+  res.send('<h1 style="color: #4CAF50;">AI Stock Bot è attivo!</h1>');
 });
 
 // Endpoint per la chat con memoria
 app.post('/chat', async (req, res) => {
   const { message, userId } = req.body;
 
-  // Recupera la memoria per l'utente (se esiste)
   const userMemory = conversationMemory[userId] || [];
 
   try {
     const response = await openai.createChatCompletion({
       model: 'gpt-4o-mini',
       messages: [
-        {
-          role: 'system',
-          content: `
-Sei un assistente AI esperto di mercati finanziari, azioni, criptovalute e investimenti. Rispondi nella lingua dell’utente e fornisci analisi approfondite.`
-        },
+        { role: 'system', content: 'Sei un assistente AI esperto di mercati finanziari, azioni, criptovalute e investimenti.' },
         ...userMemory,
         { role: 'user', content: message }
       ]
@@ -46,7 +40,6 @@ Sei un assistente AI esperto di mercati finanziari, azioni, criptovalute e inves
 
     const botResponse = response.choices[0].message.content;
 
-    // Aggiorna la memoria con la nuova conversazione
     userMemory.push({ role: 'user', content: message });
     userMemory.push({ role: 'assistant', content: botResponse });
     conversationMemory[userId] = userMemory;
